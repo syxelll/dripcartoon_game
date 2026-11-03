@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DRIPCARTOON — Fight Club</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><a class="brand" href="./">DRIP<span>↯</span>CARTOON</a><span class="tag">FIGHT CLUB / PROTOTYPE 01</span><button id="sound" aria-pressed="false">ЗВУК: ВЫКЛ</button></header>
+  <main>
+    <div class="heading"><div><p class="eyebrow">UNDERGROUND FIGHTING SERIES</p><h1>СТИЛЬ РЕШАЕТ.<br><em>УДАР ДОКАЗЫВАЕТ.</em></h1></div><p class="intro">Неоновая арена. Один победитель.<br>Бомж из Dripcartoon — на арене.<br>Сразись с компьютером или другом.</p></div>
+    <section class="game" aria-label="Арена файтинга">
+      <canvas id="arena" width="1200" height="650" aria-label="Боевая арена"></canvas>
+      <div class="hud"><div class="fighter-info"><div><b id="name1">Бомж</b><span>PLAYER 1</span></div><div class="health"><i id="hp1"></i></div><div id="wins1" class="wins">○ ○</div></div><div class="clock"><strong id="timer">60</strong><span id="round">РАУНД 1</span></div><div class="fighter-info right"><div><b id="name2">Бомж · спарринг</b><span id="opponent-label">CPU</span></div><div class="health"><i id="hp2"></i></div><div id="wins2" class="wins">○ ○</div></div></div>
+      <div class="arena-label">SECTOR 07 <span>///</span> MIDNIGHT ROOFTOP</div>
+      <div id="overlay" class="overlay"><p id="overlay-kicker">ДО ДВУХ ПОБЕД</p><h2 id="overlay-title">ГОТОВ К БОЮ?</h2><p id="overlay-copy">Держи дистанцию. Лови момент. Забирай раунд.</p><button id="start">НАЧАТЬ БОЙ <span>↗</span></button></div>
+      <div id="announcement" aria-live="polite"></div>
+      <button id="pause" title="Пауза (Esc)">Ⅱ</button>
+    </section>
+    <section class="bottom"><div class="controls"><p class="eyebrow">ТВОЙ АРСЕНАЛ</p><div class="keys"><span><kbd>A</kbd><kbd>D</kbd> Движение</span><span><kbd>W</kbd> Прыжок</span><span><kbd>J</kbd> Удар рукой</span><span><kbd>K</kbd> Удар ногой</span><span><kbd>L</kbd> Блок</span></div><p class="hint">Второй игрок: ← → · ↑ · 1 рука · 2 нога · 3 блок. Esc — пауза.</p></div><label class="mode">СОПЕРНИК<select id="mode"><option value="cpu">Компьютер</option><option value="local">Второй игрок</option></select></label><button id="restart">НОВЫЙ МАТЧ ↻</button></section>
+    <div class="touch" aria-label="Сенсорное управление"><div><button data-key="a">◀</button><button data-key="d">▶</button><button data-key="w">↑</button></div><div><button data-key="j">РУКА</button><button data-key="k">НОГА</button><button data-key="l">БЛОК</button></div></div>
+    <footer><span>01 / ROOFTOP ARENA</span><span>БРАУЗЕРНЫЙ 3D-ПРОТОТИП · БОЕЦ: БОМЖ / DRIPCARTOON</span></footer>
+  </main>
+  <script type="module" src="game.js"></script>
+</body>
+</html>
