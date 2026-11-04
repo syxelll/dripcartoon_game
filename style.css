@@ -5,3 +5,4 @@ button:disabled{cursor:wait;opacity:.55}
 @media(max-width:480px){.fighter-info span{display:none}.fighter-info b{font-size:9px}}
 
 .selection{display:flex;align-items:center;gap:20px;padding:18px 0;border-bottom:1px solid #2c2d32}.selection label{display:flex;flex-direction:column;gap:8px;color:#a7a9b0;font-size:9px;letter-spacing:1.5px}.selection select{min-width:160px}.selection>span{color:var(--lime);font-weight:900;font-style:italic;padding-top:16px}.selection p{margin-left:auto;color:#85868d;font-size:10px;max-width:340px;line-height:1.7}select:disabled{opacity:.55;cursor:wait}@media(max-width:600px){.selection{gap:10px;flex-wrap:wrap}.selection select{min-width:130px}.selection p{flex-basis:100%;margin:0;max-width:none}}
+@media(max-width:600px){.selection>label:first-child{flex-basis:100%}.selection>label:first-child select{width:100%}}

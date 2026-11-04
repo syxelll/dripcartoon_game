@@ -1,0 +1,31 @@
+import {outdoorAsset} from './assets.js';
+import {roadUV} from './ground-transitions.js';
+import * as THREE from '../../vendor/three.module.js';
+import {mergeGeometries} from '../../vendor/utils/BufferGeometryUtils.js';
+import {propMaterials} from './prop-materials.js';
+export function darkenPaving(root){const materials=new Set();root.traverse(o=>{if(!o.isMesh)return;for(const m of Array.isArray(o.material)?o.material:[o.material])if(/Pavement tiles|Courtyard dark paving/i.test(m.name))materials.add(m);});for(const m of materials){m.color.set('#91958a');m.roughness=1;m.metalness=0;m.emissive?.set('#000000');m.emissiveIntensity=0;}}
+export function addCourtyardKerbs(root){if(root.getObjectByName('Courtyard_segmented_kerbs'))return;const {trim}=propMaterials(),material=trim.clone();material.name='Worn dark concrete kerbs';material.color.set('#8b9087');material.roughness=1;const parts=[];
+ const kerb=(x,z,w,d)=>{const g=new THREE.BoxGeometry(w,.12,d);g.translate(x,.005,z);parts.push(g);};
+ // Frame only the facade footpath; the two entrance gaps remain completely open.
+ for(let i=0;i<17;i++){const x=5+i;if(Math.abs(x-15.15)<1.05)continue;kerb(x,-8.21,.95,.16);}
+ // Rounded inner corners turn into continuous side paths instead of ending in stumps.
+ const pavementParts=[];for(const side of[-1,1]){const cx=side<0?4.5:21.5,cz=-2.75,r=.8;
+  const path=new THREE.BoxGeometry(.8,.05,5.55);path.translate(cx+(side<0?.4:-.4),.015,-5.525);roadUV(path,new THREE.Matrix4());pavementParts.push(path);
+  for(let i=0;i<8;i++){const a=i/8*Math.PI/2,b=(i+1)/8*Math.PI/2,outer0=new THREE.Vector3(cx-side*Math.sin(a)*r,.04,cz+Math.cos(a)*r),outer1=new THREE.Vector3(cx-side*Math.sin(b)*r,.04,cz+Math.cos(b)*r);const corner=new THREE.BufferGeometry();corner.setAttribute('position',new THREE.Float32BufferAttribute([cx,.04,cz,...outer0.toArray(),...outer1.toArray()],3));corner.setAttribute('uv',new THREE.Float32BufferAttribute([cx/2,cz/2,outer0.x/2,outer0.z/2,outer1.x/2,outer1.z/2],2));corner.computeVertexNormals();pavementParts.push(corner);
+   const mid=outer0.clone().add(outer1).multiplyScalar(.5),length=outer0.distanceTo(outer1),g=new THREE.BoxGeometry(length+.012,.12,.15);g.rotateY(Math.atan2(-(outer1.z-outer0.z),outer1.x-outer0.x));g.translate(mid.x,.005,mid.z);parts.push(g);
+  }
+  for(let z=-3.2;z> -8.15;z-=.8)kerb(cx-side*.8,z,.15,.75);
+ }
+ if(pavementParts.length){let pavingMaterial;root.traverse(o=>{if(!pavingMaterial&&o.isMesh&&/Pavement tiles|Courtyard dark paving/.test(o.material?.name??''))pavingMaterial=o.material;});pavingMaterial??=new THREE.MeshStandardMaterial({name:'Courtyard dark paving',color:'#777d73',roughness:1});const normalized=pavementParts.map(g=>g.index?g.toNonIndexed():g),geometry=mergeGeometries(normalized);pavementParts.forEach(g=>g.dispose());const mesh=new THREE.Mesh(geometry,pavingMaterial);mesh.name='Rounded_sidewalk_returns';mesh.material.side=THREE.DoubleSide;mesh.receiveShadow=true;root.add(mesh);}
+ if(!parts.length)return;const geometry=mergeGeometries(parts);parts.forEach(g=>g.dispose());const mesh=new THREE.Mesh(geometry,material);mesh.name='Courtyard_segmented_kerbs';mesh.castShadow=mesh.receiveShadow=true;root.add(mesh);return mesh;
+}
+
+let pavingMap,kerbMap,concreteBump,pavingReady;
+export function preloadPaving(){concreteMaps();return pavingReady??Promise.resolve();}
+function concreteMaps(){if(pavingMap||typeof document==='undefined')return;pavingReady=new Promise((resolve,reject)=>{pavingMap=new THREE.TextureLoader().load(outdoorAsset('paving-painted.jpg?v=small1'),resolve,undefined,reject);});pavingMap.colorSpace=THREE.SRGBColorSpace;pavingMap.wrapS=pavingMap.wrapT=THREE.RepeatWrapping;pavingMap.anisotropy=4;kerbMap=pavingMap.clone();kerbMap.repeat.set(.2,.2);kerbMap.offset.set(.025,.025);pavingReady.then(()=>{kerbMap.image=pavingMap.image;kerbMap.needsUpdate=true;});concreteBump=kerbMap;}
+export function detailPaving(root){concreteMaps();root.updateMatrixWorld(true);root.traverse(o=>{if(o.isMesh&&/Pavement tiles|Courtyard dark paving/.test(o.material?.name??'')){o.geometry=o.geometry.clone();roadUV(o.geometry,o.matrixWorld);}});const seen=new Set();root.traverse(o=>{if(!o.isMesh)return;for(const m of Array.isArray(o.material)?o.material:[o.material])if(!seen.has(m)&&/Pavement tiles|Courtyard dark paving|Worn dark concrete kerbs/.test(m.name)){seen.add(m);m.map=/kerbs/.test(m.name)?kerbMap??null:pavingMap??null;m.normalMap=null;m.roughnessMap=null;m.bumpMap=concreteBump??null;m.bumpScale=.014;m.roughness=1;m.color.set('#a1a798');m.needsUpdate=true;}});}
+let dustMaterial;
+export function addRoadEdgeDust(root,courtyard=false){if(root.getObjectByName('Road_edge_dust'))return;let map=null;if(!dustMaterial){if(typeof document!=='undefined'){const canvas=document.createElement('canvas');canvas.width=256;canvas.height=128;const c=canvas.getContext('2d');for(let y=0;y<128;y++)for(let x=0;x<256;x++){const noise=.65+.18*Math.sin(x*.17+y*.28)+.15*Math.cos(x*.36-y*.19),alpha=Math.pow(1-y/128,1.7)*noise*.48;c.fillStyle=`rgba(112,99,72,${alpha})`;c.fillRect(x,y,1,1);}map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;map.wrapS=THREE.RepeatWrapping;}dustMaterial=new THREE.MeshStandardMaterial({name:'Dust accumulated at asphalt edges',map,color:map?'#ffffff':'#706348',roughness:1,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});}
+ const p=[],uv=[],indices=[];const strip=(start,end,z,direction)=>{const base=p.length/3,steps=Math.ceil((end-start)/.5);for(let i=0;i<=steps;i++){const x=start+(end-start)*i/steps,width=.22+.12*Math.sin(x*2.7+z)+.09*Math.sin(x*7.1);for(const edge of[0,1]){p.push(x,.009,z+direction*width*edge);uv.push(x/2,1-edge);}}for(let i=0;i<steps;i++){const a=base+i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}};
+ strip(0,26,2.43,-1);if(courtyard){strip(0,4.4,-1.94,1);strip(21.6,26,-1.94,1);strip(4.5,21.5,-8.20,1);}else strip(0,26,-1.94,1);const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(p,3));geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geometry.setIndex(indices);geometry.computeVertexNormals();const mesh=new THREE.Mesh(geometry,dustMaterial);mesh.material.side=THREE.DoubleSide;mesh.name='Road_edge_dust';mesh.receiveShadow=true;root.add(mesh);return mesh;
+}

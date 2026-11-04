@@ -1,6 +1,6 @@
-import { createArena } from './renderer.js?v=finisher3';
-import { CHARACTER_ROSTER } from './character.js?v=finisher3';
-import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=finisher3';
+import { createArena } from './renderer.js?v=outdoor4';
+import { CHARACTER_ROSTER } from './character.js?v=outdoor4';
+import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=outdoor4';
 'use strict';
 const selectedCharacters = ['character1', 'bomzh'];
 // Slot colors are independent of the selected character.
@@ -113,10 +113,10 @@ function recordPunchPress(key) {
 document.querySelectorAll('[data-key]').forEach(b=>{b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);if(!keys.has(b.dataset.key))recordPunchPress(b.dataset.key);keys.add(b.dataset.key);};b.onpointerup=b.onpointercancel=b.onlostpointercapture=()=>keys.delete(b.dataset.key);});
 function setLoading(loading) {
   characterReady = !loading;
-  for (const id of ['start', 'restart', 'fighter1', 'fighter2']) $('#'+id).disabled = loading;
+  for (const id of ['start', 'restart', 'fighter1', 'fighter2', 'stage']) $('#'+id).disabled = loading;
   if (loading) {
     canvas.dataset.character = 'loading';
-    showOverlay('ЗАГРУЗКА БОЙЦОВ', 'Готовим персонажей Dripcartoon…', 'ЗАГРУЗКА');
+    showOverlay('ЗАГРУЗКА ИГРЫ', 'Готовим локацию и персонажей Dripcartoon…', 'ЗАГРУЗКА');
   } else {
     resetFighters();
     showOverlay('ГОТОВ К БОЮ?', 'Выбери бойцов. До двух побед.', 'НАЧАТЬ БОЙ');
@@ -124,7 +124,7 @@ function setLoading(loading) {
 }
 function loadingError(error) {
   console.error('Character loading failed', error);
-  showOverlay('НЕ УДАЛОСЬ ЗАГРУЗИТЬ БОЙЦОВ', 'Проверь соединение и перезагрузи страницу.', 'ПОВТОРИТЬ');
+  showOverlay('НЕ УДАЛОСЬ ЗАГРУЗИТЬ ИГРУ', 'Проверь соединение и перезагрузи страницу.', 'ПОВТОРИТЬ');
   $('#start').disabled = false;
   $('#start').onclick = () => location.reload();
 }
@@ -135,6 +135,13 @@ async function changeCharacters() {
   try { await arena3d.setCharacters(selectedCharacters); setLoading(false); }
   catch (error) { loadingError(error); }
 }
+for (const stage of arena3d.locations) $('#stage').add(new Option(stage.name,stage.id));
+$('#stage').onchange = () => {
+  state='menu';keys.clear();wins=[0,0];round=1;announce('',0);resetFighters();
+  arena3d.setStage($('#stage').value);
+  document.querySelector('.arena-label').textContent=$('#stage').selectedOptions[0].textContent.toUpperCase()+' / DRIPCARTOON';
+  showOverlay('ГОТОВ К БОЮ?', 'Новая арена. До двух побед.', 'НАЧАТЬ БОЙ');
+};
 $('#fighter1').onchange = changeCharacters;
 $('#fighter2').onchange = changeCharacters;
 resetFighters(); setLoading(true);
