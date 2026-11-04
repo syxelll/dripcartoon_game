@@ -79,7 +79,7 @@ export async function loadCharacters(scene, ids = ['character1', 'bomzh']) {
       if (f.attack) {
         if (activeAttack !== f.attack) {
           if (f.attack.type === 'kick') kickIndex = (kickIndex + 1) % mapping.kicks.length;
-          else punchIndex = (punchIndex + 1) % mapping.punches.length;
+          else punchIndex = Number.isInteger(f.attack.comboIndex) ? f.attack.comboIndex % mapping.punches.length : (punchIndex + 1) % mapping.punches.length;
         }
         name = f.attack.type === 'kick' ? mapping.kicks[kickIndex] : mapping.punches[punchIndex];
       }
@@ -89,13 +89,17 @@ export async function loadCharacters(scene, ids = ['character1', 'bomzh']) {
         next.reset().setEffectiveWeight(1).setEffectiveTimeScale(1);
         next.setLoop(f.attack || f.block ? THREE.LoopOnce : THREE.LoopRepeat, f.attack || f.block ? 1 : Infinity);
         next.clampWhenFinished = !!(f.attack || f.block);next.play();
-        if (old !== next) old.crossFadeTo(next, f.attack ? .035 : .12, false);
+        if (old !== next) old.crossFadeTo(next, f.attack?.chained ? .055 : f.attack ? .035 : .12, false);
         active = next;
       }
       mixer.update(dt);
       if (f.attack) {
         const duration = f.attack.type === 'kick' ? .55 : .32;
-        active.time = Math.min(active.getClip().duration - .001, f.attack.time / duration * active.getClip().duration);
+        // Skip the neutral lead-in on linked punches and cut their recovery.
+        const start = f.attack.type === 'punch' && f.attack.chained ? .16 : 0;
+        const end = f.attack.type === 'punch' ? .82 : 1;
+        const phase = start + Math.min(1, f.attack.time / duration) * (end - start);
+        active.time = Math.min(active.getClip().duration - .001, phase * active.getClip().duration);
         mixer.update(0);
       }
       if (f.block && mapping.block) {

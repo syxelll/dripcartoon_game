@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.js';
-import { loadCharacters } from './character.js?v=character1';
+import { loadCharacters } from './character.js?v=combo2';
 
 export function createArena(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -88,7 +88,7 @@ export function createArena(canvas) {
     if(w!==width||h!==height){width=w;height=h;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
     const distance=Math.abs(fighters[0].x-fighters[1].x)/100;
     const center=(fighters[0].x+fighters[1].x-1200)/200;
-    camera.position.set(center*.45+Math.sin(time*1.2)*.045+(Math.random()-.5)*shake*.008,3.25,Math.max(8.0,distance*.8+4.0));
+    camera.position.set(center*.45+Math.sin(time*1.2)*.045+(Math.random()-.5)*shake*.008,2.4,Math.max(6.7,distance*.72+3.1));
     camera.lookAt(center*.65,1.3,0);
     const dt = Math.min(.05, Math.max(0, time - lastAnimationTime));
     lastAnimationTime = time;
