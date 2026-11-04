@@ -1,6 +1,8 @@
-import { createArena } from './renderer.js';
+import { createArena } from './renderer.js?v=character1';
+import { CHARACTER_ROSTER } from './character.js?v=character1';
 'use strict';
-// Both slots use the supplied character; the second is a sparring clone.
+const selectedCharacters = ['character1', 'bomzh'];
+// Slot colors are independent of the selected character.
 const CHARACTERS = [
   { name: 'Бомж', color: '#ceff51', accent: '#7c9a27', skin: '#bc7c5c' },
   { name: 'Бомж · спарринг', color: '#bb8fff', accent: '#7151a0', skin: '#d89b7b' }
@@ -15,7 +17,7 @@ let lastTime = 0, animationTime = 0, roundDelay = 0, announcementTime = 0;
 let shake = 0, soundEnabled = false, audioContext;
 const FLOOR = 528;
 const ATTACKS = { punch: { duration: .32, active: .10, end: .19, reach: 108, damage: 8, cooldown: .38 }, kick: { duration: .55, active: .20, end: .32, reach: 153, damage: 13, cooldown: .65 } };
-function fighter(i) { return { ...CHARACTERS[i], x: i ? 830 : 370, y: FLOOR, vy: 0, facing: i ? -1 : 1, hp: 100, attack: null, cooldown: 0, stun: 0, block: false, moving: false, aiTime: 0, aiAction: 'approach' }; }
+function fighter(i) { return { ...CHARACTERS[i], name: CHARACTER_ROSTER[selectedCharacters[i]].name, x: i ? 830 : 370, y: FLOOR, vy: 0, facing: i ? -1 : 1, hp: 100, attack: null, cooldown: 0, stun: 0, block: false, moving: false, aiTime: 0, aiAction: 'approach' }; }
 function resetFighters() { fighters = [fighter(0),fighter(1)]; remaining = 60; particles.length = 0; updateHUD(); }
 function updateHUD() {
   fighters.forEach((f,i) => { $('#hp'+(i+1)).style.width = f.hp+'%'; $('#name'+(i+1)).textContent = f.name; $('#wins'+(i+1)).textContent = [0,1].map(n => n < wins[i] ? '●' : '○').join(' '); });
@@ -89,17 +91,32 @@ $('#restart').onclick=()=>{startMatch();$('#restart').blur();};$('#pause').oncli
 $('#mode').onchange=()=>{state='menu';wins=[0,0];round=1;keys.clear();resetFighters();announce('',0);showOverlay('ГОТОВ К БОЮ?','Режим изменён. Начни новый матч.','НАЧАТЬ БОЙ');};
 $('#sound').onclick=()=>{soundEnabled=!soundEnabled;$('#sound').textContent='ЗВУК: '+(soundEnabled?'ВКЛ':'ВЫКЛ');$('#sound').setAttribute('aria-pressed',soundEnabled);tone(440,.1);$('#sound').blur();};
 document.querySelectorAll('[data-key]').forEach(b=>{b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);keys.add(b.dataset.key);};b.onpointerup=b.onpointercancel=b.onlostpointercapture=()=>keys.delete(b.dataset.key);});
-resetFighters();
-$('#start').disabled = true; $('#restart').disabled = true;
-showOverlay('ЗАГРУЗКА БОЙЦА', 'Готовим арену и персонажа Dripcartoon…', 'ЗАГРУЗКА');
-arena3d.ready.then(() => {
-  characterReady = true;
-  $('#start').disabled = false; $('#restart').disabled = false;
-  showOverlay('ГОТОВ К БОЮ?', 'Бомж против своего двойника. До двух побед.', 'НАЧАТЬ БОЙ');
-}).catch(error => {
+function setLoading(loading) {
+  characterReady = !loading;
+  for (const id of ['start', 'restart', 'fighter1', 'fighter2']) $('#'+id).disabled = loading;
+  if (loading) {
+    canvas.dataset.character = 'loading';
+    showOverlay('ЗАГРУЗКА БОЙЦОВ', 'Готовим персонажей Dripcartoon…', 'ЗАГРУЗКА');
+  } else {
+    updateHUD();
+    showOverlay('ГОТОВ К БОЮ?', 'Выбери бойцов. До двух побед.', 'НАЧАТЬ БОЙ');
+  }
+}
+function loadingError(error) {
   console.error('Character loading failed', error);
-  showOverlay('НЕ УДАЛОСЬ ЗАГРУЗИТЬ БОЙЦА', 'Проверь соединение и перезагрузи страницу.', 'ПОВТОРИТЬ');
+  showOverlay('НЕ УДАЛОСЬ ЗАГРУЗИТЬ БОЙЦОВ', 'Проверь соединение и перезагрузи страницу.', 'ПОВТОРИТЬ');
   $('#start').disabled = false;
   $('#start').onclick = () => location.reload();
-});
+}
+async function changeCharacters() {
+  state = 'menu'; keys.clear(); wins = [0, 0]; round = 1; announce('', 0);
+  selectedCharacters[0] = $('#fighter1').value; selectedCharacters[1] = $('#fighter2').value;
+  resetFighters(); setLoading(true);
+  try { await arena3d.setCharacters(selectedCharacters); setLoading(false); }
+  catch (error) { loadingError(error); }
+}
+$('#fighter1').onchange = changeCharacters;
+$('#fighter2').onchange = changeCharacters;
+resetFighters(); setLoading(true);
+arena3d.ready.then(() => setLoading(false)).catch(loadingError);
 requestAnimationFrame(frame);

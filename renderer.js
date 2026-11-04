@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.js';
-import { loadCharacters } from './character.js';
+import { loadCharacters } from './character.js?v=character1';
 
 export function createArena(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -58,7 +58,13 @@ export function createArena(canvas) {
   const sign=new THREE.Mesh(new THREE.PlaneGeometry(7,1.75),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(signCanvas),transparent:true}));sign.position.set(0,4.5,-7);scene.add(sign);
 
   let models = [];
-  const ready = loadCharacters(scene).then(loaded => { models = loaded; canvas.dataset.character = 'ready'; });
+  async function setCharacters(ids) {
+    const loaded = await loadCharacters(scene, ids);
+    for (const model of models) { model.dispose(); scene.remove(model.root); }
+    models = loaded;
+    canvas.dataset.character = 'ready';
+  }
+  const ready = setCharacters(['character1', 'bomzh']);
   const sparkMaterial = new THREE.MeshBasicMaterial({color:'#ceff51'});
   const sparks = Array.from({length:64},()=>{const s=new THREE.Mesh(new THREE.BoxGeometry(.045,.045,.045),sparkMaterial);scene.add(s);s.visible=false;return s;});
   // Batch static architecture to avoid hundreds of draw calls on mobile GPUs.
@@ -90,5 +96,5 @@ export function createArena(canvas) {
     sparks.forEach((s,i)=>{const p=particles[i];s.visible=!!p;if(p)s.position.set((p.x-600)/100,(floor-p.y)/100,.4);});
     renderer.render(scene,camera);
   }
-  return {render, ready};
+  return {render, ready, setCharacters};
 }
