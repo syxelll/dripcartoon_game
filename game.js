@@ -1,6 +1,6 @@
-import { createArena } from './renderer.js?v=combo2';
-import { CHARACTER_ROSTER } from './character.js?v=combo2';
-import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack } from './combo.js?v=combo2';
+import { createArena } from './renderer.js?v=finisher3';
+import { CHARACTER_ROSTER } from './character.js?v=finisher3';
+import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=finisher3';
 'use strict';
 const selectedCharacters = ['character1', 'bomzh'];
 // Slot colors are independent of the selected character.
@@ -18,7 +18,7 @@ let lastTime = 0, animationTime = 0, roundDelay = 0, announcementTime = 0;
 let shake = 0, soundEnabled = false, audioContext;
 const FLOOR = 528;
 const punchPresses = [0, 0];
-function fighter(i) { return { ...CHARACTERS[i], name: CHARACTER_ROSTER[selectedCharacters[i]].name, x: i ? 830 : 370, y: FLOOR, vy: 0, facing: i ? -1 : 1, hp: 100, attack: null, cooldown: 0, stun: 0, block: false, moving: false, punchQueue: 0, punchBufferTime: 0, punchCount: CHARACTER_ROSTER[selectedCharacters[i]].clips.punches.length, punchHeld: false, interrupted: false, aiTime: 0, aiAction: 'approach' }; }
+function fighter(i) { return { ...CHARACTERS[i], name: CHARACTER_ROSTER[selectedCharacters[i]].name, x: i ? 830 : 370, y: FLOOR, vy: 0, facing: i ? -1 : 1, hp: 100, attack: null, cooldown: 0, stun: 0, block: false, moving: false, punchQueue: 0, punchBufferTime: 0, punchCount: CHARACTER_ROSTER[selectedCharacters[i]].clips.punches.length, finisherIndex: CHARACTER_ROSTER[selectedCharacters[i]].clips.punches.indexOf(CHARACTER_ROSTER[selectedCharacters[i]].clips.finisher), finisherDuration: CHARACTER_ROSTER[selectedCharacters[i]].finisherDuration, punchHeld: false, interrupted: false, aiTime: 0, aiAction: 'approach' }; }
 function resetFighters() { punchPresses.fill(0); fighters = [fighter(0),fighter(1)]; remaining = 60; particles.length = 0; updateHUD(); }
 function updateHUD() {
   fighters.forEach((f,i) => { $('#hp'+(i+1)).style.width = f.hp+'%'; $('#name'+(i+1)).textContent = f.name; $('#wins'+(i+1)).textContent = [0,1].map(n => n < wins[i] ? '●' : '○').join(' '); });
@@ -74,7 +74,7 @@ function update(dt) {
   punchPresses.fill(0);
   // Resolve contact after both inputs so simultaneous strikes are fair.
   fighters.forEach((f,i)=>{
-    if(!f.attack)return;const a=f.attack,d=ATTACKS[a.type],other=fighters[1-i];
+    if(!f.attack)return;const a=f.attack,d=attackStats(a),other=fighters[1-i];
     if(!a.hit&&a.time>=d.active&&a.time<=d.end&&Math.abs(f.x-other.x)<d.reach&&Math.abs(f.y-other.y)<105){
       a.hit=true;const blocked=other.block;other.hp=Math.max(0,other.hp-(blocked?2:d.damage));other.stun=blocked?.08:.21;other.punchQueue=0;other.punchBufferTime=0;if(!blocked)other.interrupted=true;
       other.x=Math.max(65,Math.min(1135,other.x+f.facing*(blocked?9:23)));shake=blocked?2:7;
@@ -118,7 +118,7 @@ function setLoading(loading) {
     canvas.dataset.character = 'loading';
     showOverlay('ЗАГРУЗКА БОЙЦОВ', 'Готовим персонажей Dripcartoon…', 'ЗАГРУЗКА');
   } else {
-    updateHUD();
+    resetFighters();
     showOverlay('ГОТОВ К БОЮ?', 'Выбери бойцов. До двух побед.', 'НАЧАТЬ БОЙ');
   }
 }

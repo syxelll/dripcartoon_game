@@ -4,7 +4,7 @@ import { clone } from './vendor/utils/SkeletonUtils.js';
 
 export const CHARACTER_ROSTER = {
   character1: {name: 'Персонаж 1', url: './assets/character1.glb', clips: {
-    idle: 'Idle_Fight', walk: 'Walk_forward', block: 'Block_High',
+    idle: 'Idle_Fight', walk: 'Walk_forward', block: 'Block_High', finisher: 'Uppercut',
     punches: ['Jab', 'Cross', 'Uppercut'], kicks: ['Front_Kick', 'Low_Kick']
   }},
   bomzh: {name: 'Бомж', url: './assets/bomzh.glb', clips: {
@@ -27,6 +27,7 @@ async function loadAsset(id) {
       for (const name of [mapping.idle, mapping.walk, ...mapping.punches, ...mapping.kicks, ...(mapping.block ? [mapping.block] : [])]) {
         if (!clips.has(name)) throw new Error(`Missing ${id} animation: ${name}`);
       }
+      if (mapping.finisher) CHARACTER_ROSTER[id].finisherDuration = clips.get(mapping.finisher).duration;
       // Gameplay owns arena translation. Keep exported locomotion in place.
       for (const clip of clips.values()) for (const track of clip.tracks) {
         if (/^(rootx|root\.x|cpos|c_pos)\.position$/.test(track.name)) {
@@ -94,12 +95,12 @@ export async function loadCharacters(scene, ids = ['character1', 'bomzh']) {
       }
       mixer.update(dt);
       if (f.attack) {
-        const duration = f.attack.type === 'kick' ? .55 : .32;
+        const duration = f.attack.duration ?? (f.attack.type === 'kick' ? .55 : .32);
         // Skip the neutral lead-in on linked punches and cut their recovery.
-        const start = f.attack.type === 'punch' && f.attack.chained ? .16 : 0;
-        const end = f.attack.type === 'punch' ? .82 : 1;
+        const start = f.attack.type === 'punch' && f.attack.chained && !f.attack.finisher ? .16 : 0;
+        const end = f.attack.type === 'punch' && !f.attack.finisher ? .82 : 1;
         const phase = start + Math.min(1, f.attack.time / duration) * (end - start);
-        active.time = Math.min(active.getClip().duration - .001, phase * active.getClip().duration);
+        active.time = Math.min(active.getClip().duration, phase * active.getClip().duration);
         mixer.update(0);
       }
       if (f.block && mapping.block) {

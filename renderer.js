@@ -1,5 +1,5 @@
 import * as THREE from './vendor/three.module.js';
-import { loadCharacters } from './character.js?v=combo2';
+import { loadCharacters } from './character.js?v=finisher3';
 
 export function createArena(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
