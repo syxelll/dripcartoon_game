@@ -1,5 +1,6 @@
 import * as THREE from './vendor/three.module.js';
 import { GLTFLoader } from './vendor/loaders/GLTFLoader.js';
+import { createBomzhBlock } from './block-animation.js?v=detail5';
 import { clone } from './vendor/utils/SkeletonUtils.js';
 
 export const CHARACTER_ROSTER = {
@@ -8,7 +9,7 @@ export const CHARACTER_ROSTER = {
     punches: ['Jab', 'Cross', 'Uppercut'], kicks: ['Front_Kick', 'Low_Kick']
   }},
   bomzh: {name: 'Бомж', url: './assets/bomzh.glb', clips: {
-    idle: 'idle', walk: 'walk', punches: ['jab_01_combo', 'jab_02_combo'], kicks: ['kick_combo']
+    idle: 'idle', walk: 'walk', block: 'Bomzh_High_Block', punches: ['jab_01_combo', 'jab_02_combo'], kicks: ['kick_combo']
   }}
 };
 const assetCache = new Map();
@@ -24,6 +25,10 @@ async function loadAsset(id) {
         : await loader.loadAsync(url);
       const clips = new Map(gltf.animations.map(clip => [clip.name, clip]));
       const mapping = CHARACTER_ROSTER[id].clips;
+      if(id==='bomzh'){
+        const reference=await loadAsset('character1');
+        clips.set(mapping.block,createBomzhBlock(gltf.scene,clips.get(mapping.idle),reference.gltf.scene,reference.clips.get('Block_High')));
+      }
       for (const name of [mapping.idle, mapping.walk, ...mapping.punches, ...mapping.kicks, ...(mapping.block ? [mapping.block] : [])]) {
         if (!clips.has(name)) throw new Error(`Missing ${id} animation: ${name}`);
       }

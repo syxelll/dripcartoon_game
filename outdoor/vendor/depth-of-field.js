@@ -1,4 +1,4 @@
-import {compositingShader} from './compositing.js';
+import {compositingShader} from './compositing.js?v=detail5';
 import * as THREE from '../../vendor/three.module.js';
 import {FullScreenQuad} from '../../vendor/postprocessing/Pass.js';
 export function focusDepth(camera,point){camera.updateMatrixWorld(true);return Math.max(camera.near,-point.clone().applyMatrix4(camera.matrixWorldInverse).z);}

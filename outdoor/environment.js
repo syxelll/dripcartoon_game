@@ -18,8 +18,9 @@ import {ForegroundProps} from './vendor/foreground-props.js';
 import {FireBarrels} from './vendor/fire-barrels.js';
 import {WindPapers} from './vendor/wind-papers.js';
 import {LightingSettings} from './vendor/lighting.js';
-import {CompositingSettings, compositingPresets} from './vendor/compositing.js';
-import {DepthOfField} from './vendor/depth-of-field.js';
+import {CompositingSettings, compositingPresets} from './vendor/compositing.js?v=detail5';
+import {addCloseupDetails} from './vendor/closeup-details.js?v=detail5';
+import {DepthOfField} from './vendor/depth-of-field.js?v=detail5';
 
 export const SECTION_LENGTH = 26;
 export const OUTDOOR_LOCATIONS = [{id:'street', name:'Улица'},
@@ -55,6 +56,7 @@ export function loadOutdoorTemplates({assetBase = './models/'} = {}) {
     detailPaving(street);
     addRoadEdgeDust(street);
     addSurfaceWear(street, 'street');
+    addCloseupDetails(street, 'street');
     const sections = new Map([['street', street]]);
     for (let v = 0; v < COURTYARD_TYPES.length; v++) {
       const yard = createCourtyard(street, v);
@@ -67,6 +69,7 @@ export function loadOutdoorTemplates({assetBase = './models/'} = {}) {
       detailPaving(yard);
       addRoadEdgeDust(yard, true);
       addSurfaceWear(yard, 'street');
+      addCloseupDetails(yard, 'courtyard', v);
       sections.set(COURTYARD_TYPES[v], yard);
     }
     for (const section of sections.values()) section.traverse(o => {
@@ -144,6 +147,7 @@ export function createReferenceLook(scene, renderer, templates, {lowQuality = fa
   scene.fog = new THREE.Fog('#85867c', 24, 62);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.08;
   renderer.shadowMap.enabled = !lowQuality;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const ambient = new THREE.HemisphereLight();
@@ -160,6 +164,7 @@ export function createReferenceLook(scene, renderer, templates, {lowQuality = fa
   setupStreetReflections(templates.street, renderer, lighting,
     [...templates.sections.values()].filter(root => root !== templates.street));
   const grading = new CompositingSettings(storage, {defaults:compositingPresets.street});
+  grading.import({version:1,settings:compositingPresets.street});
   const post = new DepthOfField(renderer, {grading, enabled:false, lowQuality, samples:2});
   return {lighting, grading, ambient, sun, post,
     follow:x => lighting.follow(x),

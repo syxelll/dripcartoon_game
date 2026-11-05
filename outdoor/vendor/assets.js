@@ -6,7 +6,8 @@ export function configureOutdoorAssets(value = './models/') {
   base = new URL(path, document.baseURI).href;
 }
 export function outdoorAsset(file) {
-  const embedded=document.getElementById('outdoor-'+file);
+  const filename=file.split('?')[0];
+  const embedded=document.getElementById('outdoor-'+filename);
   if(embedded){
     if(!embeddedURLs.has(file)){
       const data=Uint8Array.from(atob(embedded.textContent.trim()),c=>c.charCodeAt(0));
