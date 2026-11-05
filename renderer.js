@@ -1,6 +1,7 @@
 import * as THREE from './vendor/three.module.js';
-import { loadCharacters } from './character.js?v=detail5';
-import { loadOutdoorTemplates, createOutdoorWorld, createReferenceLook, OUTDOOR_LOCATIONS } from './outdoor/environment.js?v=detail5';
+import {OUTDOOR_LOOK} from './outdoor/look-preset.js?v=look6';
+import { loadCharacters } from './character.js?v=look6';
+import { loadOutdoorTemplates, createOutdoorWorld, createReferenceLook, OUTDOOR_LOCATIONS } from './outdoor/environment.js?v=look6';
 
 export function createArena(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -8,7 +9,7 @@ export function createArena(canvas) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
+  renderer.toneMappingExposure = OUTDOOR_LOOK.settings.exposure;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(43, 1200/650, .1, 160);

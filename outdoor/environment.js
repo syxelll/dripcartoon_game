@@ -1,4 +1,5 @@
 import * as THREE from '../vendor/three.module.js';
+import {OUTDOOR_LOOK} from './look-preset.js?v=look6';
 import {GLTFLoader} from '../vendor/loaders/GLTFLoader.js';
 import {configureOutdoorAssets, outdoorAsset} from './vendor/assets.js';
 import {preloadArchitecture, applyPaintedArchitecture} from './vendor/painted-architecture.js';
@@ -18,7 +19,7 @@ import {ForegroundProps} from './vendor/foreground-props.js';
 import {FireBarrels} from './vendor/fire-barrels.js';
 import {WindPapers} from './vendor/wind-papers.js';
 import {LightingSettings} from './vendor/lighting.js';
-import {CompositingSettings, compositingPresets} from './vendor/compositing.js?v=detail5';
+import {CompositingSettings} from './vendor/compositing.js?v=detail5';
 import {addCloseupDetails} from './vendor/closeup-details.js?v=detail5';
 import {DepthOfField} from './vendor/depth-of-field.js?v=detail5';
 
@@ -147,7 +148,7 @@ export function createReferenceLook(scene, renderer, templates, {lowQuality = fa
   scene.fog = new THREE.Fog('#85867c', 24, 62);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.08;
+  renderer.toneMappingExposure = OUTDOOR_LOOK.settings.exposure;
   renderer.shadowMap.enabled = !lowQuality;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const ambient = new THREE.HemisphereLight();
@@ -161,10 +162,12 @@ export function createReferenceLook(scene, renderer, templates, {lowQuality = fa
   scene.add(ambient, sun, sun.target);
   const storage = {getItem:() => null};
   const lighting = new LightingSettings({scene, renderer, sun, ambient, lowQuality, storage});
+  lighting.defaults = {...OUTDOOR_LOOK.settings};
+  lighting.import({version:OUTDOOR_LOOK.version,settings:OUTDOOR_LOOK.settings});
   setupStreetReflections(templates.street, renderer, lighting,
     [...templates.sections.values()].filter(root => root !== templates.street));
-  const grading = new CompositingSettings(storage, {defaults:compositingPresets.street});
-  grading.import({version:1,settings:compositingPresets.street});
+  const grading = new CompositingSettings(storage, {defaults:OUTDOOR_LOOK.compositing.settings});
+  grading.import(OUTDOOR_LOOK.compositing);
   const post = new DepthOfField(renderer, {grading, enabled:false, lowQuality, samples:2});
   return {lighting, grading, ambient, sun, post,
     follow:x => lighting.follow(x),

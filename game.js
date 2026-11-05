@@ -1,6 +1,6 @@
-import { createArena } from './renderer.js?v=detail5';
-import { CHARACTER_ROSTER } from './character.js?v=detail5';
-import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=detail5';
+import { createArena } from './renderer.js?v=look6';
+import { CHARACTER_ROSTER } from './character.js?v=look6';
+import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=look6';
 'use strict';
 const selectedCharacters = ['character1', 'bomzh'];
 // Slot colors are independent of the selected character.
