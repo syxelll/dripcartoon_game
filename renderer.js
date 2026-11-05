@@ -1,7 +1,7 @@
 import * as THREE from './vendor/three.module.js';
-import {OUTDOOR_LOOK} from './outdoor/look-preset.js?v=scale7';
-import { loadCharacters, FIGHTER_WORLD_UNITS } from './character.js?v=scale7';
-import { loadOutdoorTemplates, createOutdoorWorld, createReferenceLook, OUTDOOR_LOCATIONS } from './outdoor/environment.js?v=scale7';
+import {OUTDOOR_LOOK} from './outdoor/look-preset.js?v=close8';
+import { loadCharacters, FIGHTER_WORLD_UNITS } from './character.js?v=close8';
+import { loadOutdoorTemplates, createOutdoorWorld, createReferenceLook, OUTDOOR_LOCATIONS } from './outdoor/environment.js?v=close8';
 
 export function createArena(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -49,8 +49,10 @@ export function createArena(canvas) {
     if(w!==width||h!==height){width=w;height=h;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();look?.resize(w,h);}
     const distance=Math.abs(fighters[0].x-fighters[1].x)/FIGHTER_WORLD_UNITS;
     const center=(fighters[0].x+fighters[1].x-1200)/(2*FIGHTER_WORLD_UNITS);
-    camera.position.set(STAGE_X+center*.45+Math.sin(time*1.2)*.045+(Math.random()-.5)*shake*.008,2.14,STAGE_Z+Math.max(6.7,distance*.72+3.1));
-    camera.lookAt(STAGE_X+center*.65,1.04,STAGE_Z);
+    const focusHeight=1.04+Math.max(0,(floor-Math.min(...fighters.map(f=>f.y)))/FIGHTER_WORLD_UNITS)*.55;
+    const cameraDistance=Math.max(4.8,distance*.82+1.45);
+    camera.position.set(STAGE_X+center*.45+Math.sin(time*1.2)*.045+(Math.random()-.5)*shake*.008,focusHeight+cameraDistance*(1.1/6.7),STAGE_Z+cameraDistance);
+    camera.lookAt(STAGE_X+center*.65,focusHeight,STAGE_Z);
     const dt = Math.min(.05, Math.max(0, time - lastAnimationTime));
     lastAnimationTime = time;
     models.forEach((model, i) => model.update(fighters[i], dt, floor));
@@ -58,7 +60,7 @@ export function createArena(canvas) {
     if (look && world) {
       look.follow(STAGE_X+center*.65);
       world.update({x:STAGE_X+center*.65,time,dt,camera});
-      const target = new THREE.Vector3(STAGE_X+center*.65,1.04,STAGE_Z);
+      const target = new THREE.Vector3(STAGE_X+center*.65,focusHeight,STAGE_Z);
       look.render(camera,target,dt);
     } else renderer.render(scene,camera);
   }

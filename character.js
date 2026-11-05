@@ -1,6 +1,6 @@
 import * as THREE from './vendor/three.module.js';
 import { GLTFLoader } from './vendor/loaders/GLTFLoader.js';
-import { createBomzhBlock } from './block-animation.js?v=detail5';
+import { createBomzhBlock } from './block-animation.js?v=close8';
 import { clone } from './vendor/utils/SkeletonUtils.js';
 
 // Keep visual body size, movement and hit distances in the same world scale.
