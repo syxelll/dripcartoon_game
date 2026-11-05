@@ -3,6 +3,10 @@ import { GLTFLoader } from './vendor/loaders/GLTFLoader.js';
 import { createBomzhBlock } from './block-animation.js?v=detail5';
 import { clone } from './vendor/utils/SkeletonUtils.js';
 
+// Keep visual body size, movement and hit distances in the same world scale.
+export const FIGHTER_HEIGHT = 1.8;
+export const FIGHTER_WORLD_UNITS = 125;
+
 export const CHARACTER_ROSTER = {
   character1: {name: 'Персонаж 1', url: './assets/character1.glb', clips: {
     idle: 'Idle_Fight', walk: 'Walk_forward', block: 'Block_High', finisher: 'Uppercut',
@@ -68,17 +72,17 @@ export async function loadCharacters(scene, ids = ['character1', 'bomzh']) {
     mesh.updateMatrixWorld(true);
     const bounds = new THREE.Box3().setFromObject(mesh, true);
     const size = bounds.getSize(new THREE.Vector3()), center = bounds.getCenter(new THREE.Vector3());
-    const scale = 2.25 / size.y;
+    const scale = FIGHTER_HEIGHT / size.y;
     mesh.scale.setScalar(scale);
     mesh.position.set(-center.x * scale, -bounds.min.y * scale, -center.z * scale);
     pivot.rotation.y = Math.PI / 2;
-    const marker = new THREE.Mesh(new THREE.RingGeometry(.38,.43,48),new THREE.MeshBasicMaterial({color:index?'#bb8fff':'#ceff51',side:THREE.DoubleSide,transparent:true,opacity:.8}));
+    const marker = new THREE.Mesh(new THREE.RingGeometry(.304,.344,48),new THREE.MeshBasicMaterial({color:index?'#bb8fff':'#ceff51',side:THREE.DoubleSide,transparent:true,opacity:.8}));
     marker.rotation.x = -Math.PI / 2; marker.position.y = .055; root.add(marker);
-    const guard = new THREE.Mesh(new THREE.TorusGeometry(.46,.022,6,32,Math.PI),new THREE.MeshBasicMaterial({color:'#d8c4ff',transparent:true,opacity:.75}));
-    guard.position.set(.45,1.45,0);guard.rotation.y=Math.PI/2;root.add(guard);
+    const guard = new THREE.Mesh(new THREE.TorusGeometry(.368,.0176,6,32,Math.PI),new THREE.MeshBasicMaterial({color:'#d8c4ff',transparent:true,opacity:.75}));
+    guard.position.set(.36,1.16,0);guard.rotation.y=Math.PI/2;root.add(guard);
     let active = actions.get(mapping.idle), activeAttack = null, punchIndex = -1, kickIndex = -1;
     function update(f, dt, floor) {
-      root.position.set((f.x - 600) / 100,(floor - f.y) / 100,0);
+      root.position.set((f.x - 600) / FIGHTER_WORLD_UNITS,(floor - f.y) / FIGHTER_WORLD_UNITS,0);
       root.rotation.y = f.facing === 1 ? 0 : Math.PI;
       guard.visible = f.block && !mapping.block;marker.visible = f.y === floor;
       let name = f.block && mapping.block ? mapping.block : f.moving ? mapping.walk : mapping.idle;
