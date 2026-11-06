@@ -143,7 +143,7 @@ export function createOutdoorWorld(templates, {
 
 // Optional reference look. A host game with its own lighting/postprocessing can
 // use the imported settings instead of replacing its renderer configuration.
-export function createReferenceLook(scene, renderer, templates, {lowQuality = false} = {}) {
+export function createReferenceLook(scene, renderer, templates, {lowQuality = false, shadowSize=2048, samples=2} = {}) {
   scene.background = new THREE.Color('#85867c');
   scene.fog = new THREE.Fog('#85867c', 24, 62);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -154,7 +154,7 @@ export function createReferenceLook(scene, renderer, templates, {lowQuality = fa
   const ambient = new THREE.HemisphereLight();
   const sun = new THREE.DirectionalLight();
   sun.castShadow = !lowQuality;
-  sun.shadow.mapSize.set(lowQuality ? 1024 : 2048, lowQuality ? 1024 : 2048);
+  sun.shadow.mapSize.set(lowQuality ? 1024 : shadowSize, lowQuality ? 1024 : shadowSize);
   Object.assign(sun.shadow.camera, {left:-18, right:18, top:14, bottom:-14, far:45});
   sun.shadow.bias = -.001;
   sun.shadow.normalBias = .025;
@@ -168,7 +168,7 @@ export function createReferenceLook(scene, renderer, templates, {lowQuality = fa
     [...templates.sections.values()].filter(root => root !== templates.street));
   const grading = new CompositingSettings(storage, {defaults:OUTDOOR_LOOK.compositing.settings});
   grading.import(OUTDOOR_LOOK.compositing);
-  const post = new DepthOfField(renderer, {grading, enabled:false, lowQuality, samples:2});
+  const post = new DepthOfField(renderer, {grading, enabled:false, lowQuality, samples});
   return {lighting, grading, ambient, sun, post,
     follow:x => lighting.follow(x),
     resize:(width, height) => post.resize(width, height),

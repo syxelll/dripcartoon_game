@@ -1,6 +1,6 @@
-import { createArena } from './renderer.js?v=close8';
-import { CHARACTER_ROSTER } from './character.js?v=close8';
-import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=close8';
+import { createArena } from './renderer.js?v=mobile9';
+import { CHARACTER_ROSTER } from './character.js?v=mobile9';
+import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=mobile9';
 'use strict';
 const selectedCharacters = ['character1', 'bomzh'];
 // Slot colors are independent of the selected character.
@@ -12,6 +12,7 @@ const canvas = document.querySelector('#arena');
 const arena3d = createArena(canvas);
 const $ = s => document.querySelector(s);
 const keys = new Set(), particles = [];
+const keyboardHeld=new Set(),touchPointers=new Map();
 let fighters, state = 'menu', wins = [0,0], round = 1, remaining = 60;
 let characterReady = false;
 let lastTime = 0, animationTime = 0, roundDelay = 0, announcementTime = 0;
@@ -27,12 +28,12 @@ function updateHUD() {
 }
 function announce(text, duration=1) { $('#announcement').textContent = text; announcementTime = duration; }
 function showOverlay(title, copy, button) { $('#overlay-title').textContent=title; $('#overlay-copy').textContent=copy; $('#start').innerHTML=button+' <span>↗</span>'; $('#overlay').hidden=false; }
-function startMatch() { if (!characterReady) return; wins=[0,0]; round=1; resetFighters(); state='fight'; $('#overlay').hidden=true; announce('FIGHT!',1); keys.clear(); }
-function pause() { if(state==='fight'){state='paused';keys.clear();punchPresses.fill(0);fighters.forEach(f=>{f.punchQueue=0;f.punchBufferTime=0});showOverlay('ПАУЗА','Выдохни. Следующий удар за тобой.','ПРОДОЛЖИТЬ');}else if(state==='paused'){state='fight';$('#overlay').hidden=true;} }
+function startMatch() { if (!characterReady) return; wins=[0,0]; round=1; resetFighters(); state='fight'; $('#overlay').hidden=true; announce('FIGHT!',1); clearInput(); }
+function pause() { if(state==='fight'){state='paused';clearInput();punchPresses.fill(0);fighters.forEach(f=>{f.punchQueue=0;f.punchBufferTime=0});showOverlay('ПАУЗА','Выдохни. Следующий удар за тобой.','ПРОДОЛЖИТЬ');}else if(state==='paused'){state='fight';$('#overlay').hidden=true;} }
 function tone(freq, duration, type='triangle') { if(!soundEnabled)return; audioContext ||= new (window.AudioContext||window.webkitAudioContext)(); const o=audioContext.createOscillator(), g=audioContext.createGain(); o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(.055,audioContext.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioContext.currentTime+duration);o.connect(g);g.connect(audioContext.destination);o.start();o.stop(audioContext.currentTime+duration); }
 
 function control(f, input, dt) {
-  f.block=input.block&&f.y===FLOOR&&!f.attack&&f.stun<=0;
+  f.block=input.block&&f.y===FLOOR&&!f.attack&&(f.stun<=0||f.block);
   f.moving=false;
   if (input.block) { f.punchQueue = 0; f.punchBufferTime = 0; }
   if(f.stun>0){ f.punchQueue=0; f.punchBufferTime=0; return; }
@@ -95,24 +96,51 @@ function update(dt) {
 function render(){ arena3d.render(fighters, particles, animationTime, shake, FLOOR); }
 function frame(t){const dt=Math.min((t-lastTime)/1000||0,.033);lastTime=t;if(state!=='paused')update(dt);render();requestAnimationFrame(frame);}
 window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(e.target.matches('select,button')&&key!=='escape')return;if(['a','d','w','j','k','l','arrowleft','arrowright','arrowup','1','2','3',' '].includes(key))e.preventDefault();if(key==='escape'&&!e.repeat)pause();else {
-  if (!e.repeat && !keys.has(key)) recordPunchPress(key);
-  keys.add(key);
+  if (!e.repeat && !keyboardHeld.has(key)) recordPunchPress(key);
+  keyboardHeld.add(key); keys.add(key);
 }});
-window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
-window.addEventListener('blur',()=>{keys.clear();if(state==='fight')pause();});
+window.addEventListener('keyup',e=>{const key=e.key.toLowerCase();keyboardHeld.delete(key);if(![...touchPointers.values()].some(p=>p.key===key))keys.delete(key)});
+window.addEventListener('blur',()=>{clearInput();if(state==='fight')pause();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&state==='fight')pause();});
 $('#start').onclick=()=>{if(state==='paused')pause();else startMatch();$('#start').blur();};
 $('#restart').onclick=()=>{startMatch();$('#restart').blur();};$('#pause').onclick=()=>{pause();$('#pause').blur();};
-$('#mode').onchange=()=>{state='menu';wins=[0,0];round=1;keys.clear();resetFighters();announce('',0);showOverlay('ГОТОВ К БОЮ?','Режим изменён. Начни новый матч.','НАЧАТЬ БОЙ');};
+$('#mode').onchange=()=>{state='menu';wins=[0,0];round=1;clearInput();resetFighters();announce('',0);showOverlay('ГОТОВ К БОЮ?','Режим изменён. Начни новый матч.','НАЧАТЬ БОЙ');};
 $('#sound').onclick=()=>{soundEnabled=!soundEnabled;$('#sound').textContent='ЗВУК: '+(soundEnabled?'ВКЛ':'ВЫКЛ');$('#sound').setAttribute('aria-pressed',soundEnabled);tone(440,.1);$('#sound').blur();};
 function recordPunchPress(key) {
   if (state !== 'fight') return;
   if (key === 'j') punchPresses[0] = Math.min(3, punchPresses[0] + 1);
   if (key === '1' && $('#mode').value === 'local') punchPresses[1] = Math.min(3, punchPresses[1] + 1);
 }
-document.querySelectorAll('[data-key]').forEach(b=>{b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);if(!keys.has(b.dataset.key))recordPunchPress(b.dataset.key);keys.add(b.dataset.key);};b.onpointerup=b.onpointercancel=b.onlostpointercapture=()=>keys.delete(b.dataset.key);});
+function clearInput(){
+  keys.clear();keyboardHeld.clear();touchPointers.clear();
+  document.querySelectorAll('[data-key]').forEach(b=>b.classList.remove('is-pressed'));
+}
+document.querySelectorAll('[data-key]').forEach(button=>{
+  function release(event){
+    const touch=touchPointers.get(event.pointerId);if(!touch)return;
+    touchPointers.delete(event.pointerId);
+    if(![...touchPointers.values()].some(p=>p.key===touch.key)){
+      touch.button.classList.remove('is-pressed');if(!keyboardHeld.has(touch.key))keys.delete(touch.key);
+    }
+  }
+  button.addEventListener('pointerdown',event=>{
+    event.preventDefault();if(button.disabled)return;
+    button.setPointerCapture(event.pointerId);touchPointers.set(event.pointerId,{key:button.dataset.key,button});
+    recordPunchPress(button.dataset.key);keys.add(button.dataset.key);button.classList.add('is-pressed');
+  });
+  for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,release);
+  button.addEventListener('contextmenu',event=>event.preventDefault());
+});
+const mobileLayout=matchMedia('(max-width:600px), (pointer:coarse) and (max-width:1100px)');
+const options=document.querySelector('.game-options');options.open=!mobileLayout.matches;
+mobileLayout.addEventListener('change',event=>{options.open=!event.matches;clearInput()});
+if(!document.fullscreenEnabled)$('#fullscreen').hidden=true;
+$('#fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen()}catch{}};
+options.addEventListener('toggle',()=>{if(options.open&&mobileLayout.matches&&state==='fight')pause()});
+
 function setLoading(loading) {
   characterReady = !loading;
+  document.querySelectorAll('[data-key]').forEach(b=>b.disabled=loading);
   for (const id of ['start', 'restart', 'fighter1', 'fighter2', 'stage']) $('#'+id).disabled = loading;
   if (loading) {
     canvas.dataset.character = 'loading';
@@ -129,7 +157,7 @@ function loadingError(error) {
   $('#start').onclick = () => location.reload();
 }
 async function changeCharacters() {
-  state = 'menu'; keys.clear(); wins = [0, 0]; round = 1; announce('', 0);
+  state = 'menu'; clearInput(); wins = [0, 0]; round = 1; announce('', 0);
   selectedCharacters[0] = $('#fighter1').value; selectedCharacters[1] = $('#fighter2').value;
   resetFighters(); setLoading(true);
   try { await arena3d.setCharacters(selectedCharacters); setLoading(false); }
@@ -137,7 +165,7 @@ async function changeCharacters() {
 }
 for (const stage of arena3d.locations) $('#stage').add(new Option(stage.name,stage.id));
 $('#stage').onchange = () => {
-  state='menu';keys.clear();wins=[0,0];round=1;announce('',0);resetFighters();
+  state='menu';clearInput();wins=[0,0];round=1;announce('',0);resetFighters();
   arena3d.setStage($('#stage').value);
   document.querySelector('.arena-label').textContent=$('#stage').selectedOptions[0].textContent.toUpperCase()+' / DRIPCARTOON';
   showOverlay('ГОТОВ К БОЮ?', 'Новая арена. До двух побед.', 'НАЧАТЬ БОЙ');
