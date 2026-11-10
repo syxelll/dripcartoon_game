@@ -1,6 +1,6 @@
-import { createArena } from './renderer.js?v=actions14';
-import { CHARACTER_ROSTER } from './character.js?v=actions14';
-import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=actions14';
+import { createArena } from './renderer.js?v=actions15';
+import { CHARACTER_ROSTER } from './character.js?v=actions15';
+import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=actions15';
 'use strict';
 const selectedCharacters = ['character1', 'bomzh'];
 // Slot colors are independent of the selected character.
@@ -68,7 +68,7 @@ function update(dt) {
   if(announcementTime>0){announcementTime-=dt;if(announcementTime<=0)$('#announcement').textContent='';}
   shake=Math.max(0,shake-dt*35);
   for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=480*dt;if(p.life<=0)particles.splice(i,1);}
-  if(state==='roundEnd'){fighters.forEach(f=>{if(f.attack){f.attack.time+=dt;finishAttack(f)}f.stun=Math.max(0,f.stun-dt)});roundDelay-=dt;if(roundDelay<=0){if(wins.some(w=>w===2)){state='over';showOverlay(fighters[wins[0]===2?0:1].name+' ПОБЕДИЛ','Матч завершён. Готов к реваншу?','РЕВАНШ');}else{const down=fighters.map(f=>f.hp<=0);round++;resetFighters();fighters.forEach((f,i)=>{if(down[i])f.getupTime=f.animationDurations.getup||.7});state='fight';announce('РАУНД '+round,1);}}return;}
+  if(state==='roundEnd'){fighters.forEach(f=>{if(f.attack){f.attack.time+=dt;finishAttack(f)}f.stun=Math.max(0,f.stun-dt);if(f.y<FLOOR){f.vy+=1550*dt;f.y=Math.min(FLOOR,f.y+f.vy*dt);f.airTime+=dt;if(f.y===FLOOR){f.vy=0;f.airTime=0}}});roundDelay-=dt;if(roundDelay<=0){if(wins.some(w=>w===2)){state='over';showOverlay(fighters[wins[0]===2?0:1].name+' ПОБЕДИЛ','Матч завершён. Готов к реваншу?','РЕВАНШ');}else{const down=fighters.map(f=>f.hp<=0);round++;resetFighters();fighters.forEach((f,i)=>{if(down[i])f.getupTime=f.animationDurations.getup||.7});state='fight';announce('РАУНД '+round,1);}}return;}
   if(state!=='fight')return;
   remaining=Math.max(0,remaining-dt);
   fighters.forEach((f,i)=>{

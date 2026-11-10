@@ -1,10 +1,10 @@
-import {resizeBusShelter,addRoadDetails} from './kitay-street-details.js?v=actions14';
+import {resizeBusShelter,addRoadDetails} from './kitay-street-details.js?v=actions15';
 import * as THREE from './vendor/three.module.js';
 import {GLTFLoader} from './vendor/loaders/GLTFLoader.js';
 const urls=new Map();
 function asset(name){
  const embedded=document.getElementById('kitay-'+name);
- if(!embedded)return new URL('./assets/kitay-gorod/'+name+'?v=actions14',document.baseURI).href;
+ if(!embedded)return new URL('./assets/kitay-gorod/'+name+'?v=actions15',document.baseURI).href;
  if(!urls.has(name)){const bytes=Uint8Array.from(atob(embedded.textContent.trim()),c=>c.charCodeAt(0));urls.set(name,URL.createObjectURL(new Blob([bytes],{type:name.endsWith('.glb')?'model/gltf-binary':'image/jpeg'})))}
  return urls.get(name);
 }
