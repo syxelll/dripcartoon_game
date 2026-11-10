@@ -1,6 +1,6 @@
-import { createArena } from './renderer.js?v=mobile9';
-import { CHARACTER_ROSTER } from './character.js?v=mobile9';
-import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=mobile9';
+import { createArena } from './renderer.js?v=kitay10';
+import { CHARACTER_ROSTER } from './character.js?v=kitay10';
+import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=kitay10';
 'use strict';
 const selectedCharacters = ['character1', 'bomzh'];
 // Slot colors are independent of the selected character.
@@ -94,7 +94,7 @@ function update(dt) {
   updateHUD();if(remaining<=0||fighters.some(f=>f.hp<=0))finishRound();
 }
 function render(){ arena3d.render(fighters, particles, animationTime, shake, FLOOR); }
-function frame(t){const dt=Math.min((t-lastTime)/1000||0,.033);lastTime=t;if(state!=='paused')update(dt);render();requestAnimationFrame(frame);}
+function frame(t){const dt=Math.min((t-lastTime)/1000||0,.033);lastTime=t;if(state!=='paused')update(dt);if(characterReady)render();requestAnimationFrame(frame);}
 window.addEventListener('keydown',e=>{const key=e.key.toLowerCase();if(e.target.matches('select,button')&&key!=='escape')return;if(['a','d','w','j','k','l','arrowleft','arrowright','arrowup','1','2','3',' '].includes(key))e.preventDefault();if(key==='escape'&&!e.repeat)pause();else {
   if (!e.repeat && !keyboardHeld.has(key)) recordPunchPress(key);
   keyboardHeld.add(key); keys.add(key);
@@ -164,14 +164,19 @@ async function changeCharacters() {
   catch (error) { loadingError(error); }
 }
 for (const stage of arena3d.locations) $('#stage').add(new Option(stage.name,stage.id));
-$('#stage').onchange = () => {
+$('#stage').onchange = async () => {
   state='menu';clearInput();wins=[0,0];round=1;announce('',0);resetFighters();
-  arena3d.setStage($('#stage').value);
+  setLoading(true);
+  try { await arena3d.setStage($('#stage').value);setLoading(false); }
+  catch(error){loadingError(error);return;}
   document.querySelector('.arena-label').textContent=$('#stage').selectedOptions[0].textContent.toUpperCase()+' / DRIPCARTOON';
   showOverlay('ГОТОВ К БОЮ?', 'Новая арена. До двух побед.', 'НАЧАТЬ БОЙ');
 };
 $('#fighter1').onchange = changeCharacters;
 $('#fighter2').onchange = changeCharacters;
 resetFighters(); setLoading(true);
-arena3d.ready.then(() => setLoading(false)).catch(loadingError);
+arena3d.ready.then(() => {
+  setLoading(false);$('#stage').value=canvas.dataset.stage;
+  document.querySelector('.arena-label').textContent=$('#stage').selectedOptions[0].textContent.toUpperCase()+' / DRIPCARTOON';
+}).catch(loadingError);
 requestAnimationFrame(frame);
