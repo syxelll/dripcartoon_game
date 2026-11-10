@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>DRIPCARTOON — Fight Club</title>
-  <link rel="stylesheet" href="style.css?v=street13">
+  <link rel="stylesheet" href="style.css?v=actions14">
 </head>
 <body>
   <header><a class="brand" href="./">DRIP<span>↯</span>CARTOON</a><span class="tag">FIGHT CLUB / PROTOTYPE 01</span><button id="fullscreen" title="На весь экран" aria-label="На весь экран">⛶</button><button id="sound" aria-pressed="false">ЗВУК: ВЫКЛ</button></header>
@@ -17,14 +17,14 @@
       <div id="announcement" aria-live="polite"></div>
       <button id="pause" title="Пауза (Esc)">Ⅱ</button>
     </section>
-    <div class="touch" aria-label="Сенсорное управление"><div class="move-pad"><button data-key="a" aria-label="Влево">◀</button><button data-key="d" aria-label="Вправо">▶</button><button data-key="w" aria-label="Прыжок">ПРЫЖОК ↑</button></div><div class="action-pad"><button data-key="j">УДАР</button><button data-key="k">НОГА</button><button data-key="l">БЛОК</button></div></div>
+    <div class="touch" aria-label="Сенсорное управление"><div class="move-pad"><button data-key="a" aria-label="Влево">◀</button><button data-key="d" aria-label="Вправо">▶</button><button data-key="w" aria-label="Прыжок">ПРЫЖОК ↑</button><button data-key="s" aria-label="Присесть">ПРИСЕСТЬ ↓</button></div><div class="action-pad"><button data-key="j">УДАР</button><button data-key="k">НОГА</button><button data-key="l">БЛОК</button></div></div>
     <details class="game-options" open><summary>Бойцы и арена <span>⌄</span></summary>
-    <section class="selection" aria-label="Выбор бойцов"><label>ЛОКАЦИЯ<select id="stage" aria-label="Локация"></select></label><label>ИГРОК 1<select id="fighter1"><option value="character1">Персонаж 1</option><option value="bomzh">Бомж</option></select></label><span>VS</span><label>СОПЕРНИК<select id="fighter2"><option value="bomzh">Бомж</option><option value="character1">Персонаж 1</option></select></label><p>Быстро нажимай J: Jab → Cross → Uppercut. Апперкот доигрывает полностью и завершает серию.</p></section>
-    <section class="bottom"><div class="controls"><p class="eyebrow">ТВОЙ АРСЕНАЛ</p><div class="keys"><span><kbd>A</kbd><kbd>D</kbd> Движение</span><span><kbd>W</kbd> Прыжок</span><span><kbd>J</kbd> Удар рукой</span><span><kbd>K</kbd> Удар ногой</span><span><kbd>L</kbd> Блок</span></div><p class="hint">Второй игрок: ← → · ↑ · 1 рука · 2 нога · 3 блок. Esc — пауза.</p></div><label class="mode">СОПЕРНИК<select id="mode"><option value="cpu">Компьютер</option><option value="local">Второй игрок</option></select></label><button id="restart">НОВЫЙ МАТЧ ↻</button></section>
+    <section class="selection" aria-label="Выбор бойцов"><label>ЛОКАЦИЯ<select id="stage" aria-label="Локация"></select></label><label>ИГРОК 1<select id="fighter1"><option value="character1">Персонаж 1</option><option value="bomzh">Бомж</option></select></label><span>VS</span><label>СОПЕРНИК<select id="fighter2"><option value="bomzh">Бомж</option><option value="character1">Персонаж 1</option></select></label><p>Быстро нажимай J: Jab → Cross → Uppercut. Апперкот завершает серию. W + J/K — удар в прыжке. S — присесть, S + K — нижний удар.</p></section>
+    <section class="bottom"><div class="controls"><p class="eyebrow">ТВОЙ АРСЕНАЛ</p><div class="keys"><span><kbd>A</kbd><kbd>D</kbd> Движение</span><span><kbd>W</kbd> Прыжок</span><span><kbd>S</kbd> Присесть</span><span><kbd>J</kbd> Удар рукой</span><span><kbd>K</kbd> Удар ногой</span><span><kbd>L</kbd> Блок</span></div><p class="hint">Второй игрок: ← → · ↑ прыжок · ↓ присесть · 1 рука · 2 нога · 3 блок. Esc — пауза.</p></div><label class="mode">СОПЕРНИК<select id="mode"><option value="cpu">Компьютер</option><option value="local">Второй игрок</option></select></label><button id="restart">НОВЫЙ МАТЧ ↻</button></section>
 
     </details>
     <footer><span>01 / OUTDOOR ARENA</span><span>БРАУЗЕРНЫЙ 3D-ПРОТОТИП · ДВА БОЙЦА / DRIPCARTOON</span></footer>
   </main>
-  <script type="module" src="game.js?v=street13"></script>
+  <script type="module" src="game.js?v=actions14"></script>
 </body>
 </html>

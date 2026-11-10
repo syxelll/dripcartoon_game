@@ -1,12 +1,14 @@
 // Each physical tap can buffer one more punch, at most two punches ahead.
 export const ATTACKS = {
   punch: { duration: .32, active: .10, end: .19, reach: 108, damage: 8, cooldown: .38 },
-  kick: { duration: .55, active: .20, end: .32, reach: 153, damage: 13, cooldown: .65 }
+  kick: { duration: .55, active: .20, end: .32, reach: 153, damage: 13, cooldown: .65 },
+  jumpKick:{duration:.6,active:.18,end:.38,reach:155,damage:15,cooldown:.7},
+  crouchKick:{duration:.44,active:.12,end:.28,reach:140,damage:10,cooldown:.54}
 };
 export const PUNCH_LINK_TIME = .24;
 export function startAttack(f, type) {
   if (f.cooldown > 0 || f.attack || f.stun > 0 || f.block) return false;
-  f.attack = {type, time: 0, hit: false, comboIndex: 0, chained: false, duration:ATTACKS[type].duration, finisher:false};
+  f.attack = {type, time: 0, hit: false, comboIndex: 0, chained: false, duration:f.animationDurations?.[type]||ATTACKS[type].duration, finisher:false};
   f.cooldown = ATTACKS[type].cooldown;
   return true;
 }

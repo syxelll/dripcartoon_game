@@ -52,3 +52,5 @@ button:disabled{cursor:wait;opacity:.55}
 #announcement{z-index:6;color:#f6ffd9;letter-spacing:-2px;-webkit-text-stroke:1px #c9ff5155;text-shadow:4px 5px #1b192c,0 0 30px #ceff5133}.announce-pop{animation:round-pop .25s ease-out}
 @keyframes round-pop{0%{transform:scale(1.22);opacity:.2}100%{transform:scale(1);opacity:1}}
 @media(prefers-reduced-motion:reduce){.announce-pop{animation:none}}
+@media(max-width:600px),(pointer:coarse) and (max-width:1100px){.move-pad [data-key=w]{grid-column:auto}.move-pad [data-key=s]{font-size:8px}}
+@media(pointer:coarse) and (orientation:landscape) and (max-height:600px){.touch .move-pad{width:250px;grid-template-columns:repeat(4,minmax(48px,1fr))}.move-pad [data-key=s]{font-size:8px}}

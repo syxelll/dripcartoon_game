@@ -1,0 +1,174 @@
+{
+  "character1": {
+    "clips": [
+      {
+        "name": "Block_High",
+        "duration": 0.699999988079071,
+        "tracks": 639
+      },
+      {
+        "name": "Cross",
+        "duration": 0.5333333611488342,
+        "tracks": 639
+      },
+      {
+        "name": "Front_Kick",
+        "duration": 0.6333333253860474,
+        "tracks": 639
+      },
+      {
+        "name": "Getup",
+        "duration": 0.699999988079071,
+        "tracks": 639
+      },
+      {
+        "name": "Hit_High",
+        "duration": 0.3333333432674408,
+        "tracks": 639
+      },
+      {
+        "name": "Hit_Mid",
+        "duration": 0.3333333432674408,
+        "tracks": 639
+      },
+      {
+        "name": "Idle_Fight",
+        "duration": 0.9333333373069763,
+        "tracks": 639
+      },
+      {
+        "name": "Jab",
+        "duration": 0.5,
+        "tracks": 639
+      },
+      {
+        "name": "Jump",
+        "duration": 0.8333333134651184,
+        "tracks": 639
+      },
+      {
+        "name": "Jump_Kick",
+        "duration": 0.6000000238418579,
+        "tracks": 639
+      },
+      {
+        "name": "KnockDown",
+        "duration": 0.6333333253860474,
+        "tracks": 639
+      },
+      {
+        "name": "Low_Kick",
+        "duration": 0.6000000238418579,
+        "tracks": 639
+      },
+      {
+        "name": "SitDown",
+        "duration": 0.6333333253860474,
+        "tracks": 639
+      },
+      {
+        "name": "SitDown_Kick",
+        "duration": 0.4333333373069763,
+        "tracks": 639
+      },
+      {
+        "name": "Uppercut",
+        "duration": 0.8666666746139526,
+        "tracks": 639
+      },
+      {
+        "name": "Walk_forward",
+        "duration": 0.8999999761581421,
+        "tracks": 639
+      }
+    ],
+    "weightedBonesAndAncestors": 214,
+    "bytes": 1813692
+  },
+  "bomzh": {
+    "clips": [
+      {
+        "name": "Shared_Block_High",
+        "duration": 0.699999988079071,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_Cross",
+        "duration": 0.5333333611488342,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_Front_Kick",
+        "duration": 0.6333333253860474,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_Getup",
+        "duration": 0.699999988079071,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_Hit_High",
+        "duration": 0.3333333432674408,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_Hit_Mid",
+        "duration": 0.3333333432674408,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_Idle_Fight",
+        "duration": 0.9333333373069763,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_Jab",
+        "duration": 0.5,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_Jump",
+        "duration": 0.8333333134651184,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_Jump_Kick",
+        "duration": 0.6000000238418579,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_KnockDown",
+        "duration": 0.6333333253860474,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_Low_Kick",
+        "duration": 0.6000000238418579,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_SitDown",
+        "duration": 0.6333333253860474,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_SitDown_Kick",
+        "duration": 0.4333333373069763,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_Uppercut",
+        "duration": 0.8666666746139526,
+        "tracks": 639
+      },
+      {
+        "name": "Shared_Walk_forward",
+        "duration": 0.8999999761581421,
+        "tracks": 639
+      }
+    ],
+    "weightedBonesAndAncestors": 214,
+    "bytes": 1815948
+  }
+}
