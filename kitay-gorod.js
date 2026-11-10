@@ -1,9 +1,10 @@
+import {resizeBusShelter,addRoadDetails} from './kitay-street-details.js?v=street13';
 import * as THREE from './vendor/three.module.js';
 import {GLTFLoader} from './vendor/loaders/GLTFLoader.js';
 const urls=new Map();
 function asset(name){
  const embedded=document.getElementById('kitay-'+name);
- if(!embedded)return new URL('./assets/kitay-gorod/'+name+'?v=impact12',document.baseURI).href;
+ if(!embedded)return new URL('./assets/kitay-gorod/'+name+'?v=street13',document.baseURI).href;
  if(!urls.has(name)){const bytes=Uint8Array.from(atob(embedded.textContent.trim()),c=>c.charCodeAt(0));urls.set(name,URL.createObjectURL(new Blob([bytes],{type:name.endsWith('.glb')?'model/gltf-binary':'image/jpeg'})))}
  return urls.get(name);
 }
@@ -31,7 +32,7 @@ export async function loadKitayGorod({mobile=false,x=13}={}){
    m.dispose();return baked;
   };
   o.material=Array.isArray(o.material)?o.material.map(convert):convert(o.material);
- }});gltf.scene.scale.setScalar(1.28);gltf.scene.position.z=-2.3;root.add(gltf.scene);
+ }});gltf.scene.scale.setScalar(1.28);gltf.scene.position.z=-2.3;resizeBusShelter(gltf.scene,root);root.add(gltf.scene);addRoadDetails(root);
  sky.colorSpace=THREE.SRGBColorSpace;
  sky.wrapS=THREE.MirroredRepeatWrapping;sky.repeat.x=400/180;sky.offset.x=-(400-180)/(2*180);
  const backdrop=new THREE.Mesh(new THREE.PlaneGeometry(400,42),new THREE.MeshBasicMaterial({map:sky,color:'#72808e',toneMapped:false,fog:false}));backdrop.position.set(20,14,-85);

@@ -1,9 +1,9 @@
-import {createCombatEffects} from './combat-effects.js?v=impact12';
-import {loadKitayGorod} from './kitay-gorod.js?v=impact12';
+import {createCombatEffects} from './combat-effects.js?v=street13';
+import {loadKitayGorod} from './kitay-gorod.js?v=street13';
 import * as THREE from './vendor/three.module.js';
-import {OUTDOOR_LOOK} from './outdoor/look-preset.js?v=impact12';
-import { loadCharacters, FIGHTER_WORLD_UNITS } from './character.js?v=impact12';
-import { loadOutdoorTemplates, createOutdoorWorld, createReferenceLook, OUTDOOR_LOCATIONS } from './outdoor/environment.js?v=impact12';
+import {OUTDOOR_LOOK} from './outdoor/look-preset.js?v=street13';
+import { loadCharacters, FIGHTER_WORLD_UNITS } from './character.js?v=street13';
+import { loadOutdoorTemplates, createOutdoorWorld, createReferenceLook, OUTDOOR_LOCATIONS } from './outdoor/environment.js?v=street13';
 
 export function createArena(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -70,14 +70,15 @@ export function createArena(canvas) {
     const distance=Math.abs(fighters[0].x-fighters[1].x)/FIGHTER_WORLD_UNITS;
     const center=(fighters[0].x+fighters[1].x-1200)/(2*FIGHTER_WORLD_UNITS);
     const night=stageKind==='kitay-gorod';
-    const focusHeight=(night?1.65:1.04)+Math.max(0,(floor-Math.min(...fighters.map(f=>f.y)))/FIGHTER_WORLD_UNITS)*.55;
+    actorLayer.position.z=night?.9:STAGE_Z;
+    const focusHeight=(night?1.15:1.04)+Math.max(0,(floor-Math.min(...fighters.map(f=>f.y)))/FIGHTER_WORLD_UNITS)*.55;
     const fittingDistance=(distance*.5+.65)/(Math.tan(THREE.MathUtils.degToRad(camera.fov*.5))*camera.aspect)*1.08;
     const cameraDistance=Math.max(night?5.1:4.8,distance*.82+1.45,fittingDistance);
-    camera.position.set(STAGE_X+center*.45+Math.sin(time*1.2)*.045+(Math.random()-.5)*shake*.008,focusHeight+cameraDistance*(night ? .065 : 1.1/6.7),STAGE_Z+cameraDistance);
+    camera.position.set(STAGE_X+center*.45+Math.sin(time*1.2)*.045+(Math.random()-.5)*shake*.008,focusHeight+cameraDistance*(night ? .04 : 1.1/6.7),STAGE_Z+cameraDistance);
     camera.lookAt(STAGE_X+center*.65,focusHeight,STAGE_Z);
     const dt = Math.min(.05, Math.max(0, time - lastAnimationTime));
     lastAnimationTime = time;
-    models.forEach((model, i) => {model.root.scale.setScalar(night ? .85 : 1);model.update(fighters[i], dt, floor)});
+    models.forEach((model, i) => {model.root.scale.setScalar(night ? .92 : 1);model.update(fighters[i], dt, floor)});
     combatEffects.update(dt,camera);
     sparks.forEach((s,i)=>{const p=particles[i];s.visible=!!p;if(p)s.position.set(STAGE_X+(p.x-600)/FIGHTER_WORLD_UNITS,(floor-p.y)/FIGHTER_WORLD_UNITS,STAGE_Z+.4);});
     if (look && world && !night) {
@@ -87,5 +88,5 @@ export function createArena(canvas) {
       look.render(camera,target,dt);
     } else renderer.render(scene,camera);
   }
-  return {render, ready, setCharacters, setStage, locations,resetEffects:()=>combatEffects.reset(),hit:(x,y,options)=>combatEffects.hit(new THREE.Vector3(STAGE_X+(x-600)/FIGHTER_WORLD_UNITS,(528-y)/FIGHTER_WORLD_UNITS,STAGE_Z+.65),options)};
+  return {render, ready, setCharacters, setStage, locations,resetEffects:()=>combatEffects.reset(),hit:(x,y,options)=>combatEffects.hit(new THREE.Vector3(STAGE_X+(x-600)/FIGHTER_WORLD_UNITS,(528-y)/FIGHTER_WORLD_UNITS,(stageKind==='kitay-gorod'?1.25:STAGE_Z+.65)),options)};
 }

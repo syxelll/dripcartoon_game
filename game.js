@@ -1,6 +1,6 @@
-import { createArena } from './renderer.js?v=impact12';
-import { CHARACTER_ROSTER } from './character.js?v=impact12';
-import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=impact12';
+import { createArena } from './renderer.js?v=street13';
+import { CHARACTER_ROSTER } from './character.js?v=street13';
+import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=street13';
 'use strict';
 const selectedCharacters = ['character1', 'bomzh'];
 // Slot colors are independent of the selected character.
@@ -21,7 +21,7 @@ const hitChains=[{count:0,damage:0,time:0},{count:0,damage:0,time:0}];
 let shake = 0, soundEnabled = false, audioContext;
 const FLOOR = 528;
 const punchPresses = [0, 0];
-function fighter(i) { return { ...CHARACTERS[i], name: CHARACTER_ROSTER[selectedCharacters[i]].name, x: i ? 830 : 370, y: FLOOR, vy: 0, facing: i ? -1 : 1, hp: 100, attack: null, cooldown: 0, stun: 0, block: false, moving: false, punchQueue: 0, punchBufferTime: 0, punchCount: CHARACTER_ROSTER[selectedCharacters[i]].clips.punches.length, finisherIndex: CHARACTER_ROSTER[selectedCharacters[i]].clips.punches.indexOf(CHARACTER_ROSTER[selectedCharacters[i]].clips.finisher), finisherDuration: CHARACTER_ROSTER[selectedCharacters[i]].finisherDuration, punchHeld: false, interrupted: false, aiTime: 0, aiAction: 'approach' }; }
+function fighter(i) { return { ...CHARACTERS[i], name: CHARACTER_ROSTER[selectedCharacters[i]].name, x: canvas.dataset.stage==='kitay-gorod' ? (i?765:435) : (i?830:370), y: FLOOR, vy: 0, facing: i ? -1 : 1, hp: 100, attack: null, cooldown: 0, stun: 0, block: false, moving: false, punchQueue: 0, punchBufferTime: 0, punchCount: CHARACTER_ROSTER[selectedCharacters[i]].clips.punches.length, finisherIndex: CHARACTER_ROSTER[selectedCharacters[i]].clips.punches.indexOf(CHARACTER_ROSTER[selectedCharacters[i]].clips.finisher), finisherDuration: CHARACTER_ROSTER[selectedCharacters[i]].finisherDuration, punchHeld: false, interrupted: false, aiTime: 0, aiAction: 'approach' }; }
 function resetFighters() { arena3d.resetEffects();clearTimeout(impactTimer);delete canvas.closest('.game').dataset.impact;hitStop=0;hitChains.forEach(c=>{c.count=0;c.damage=0;c.time=0});document.querySelectorAll('.combo-display').forEach(e=>e.classList.remove('visible'));  punchPresses.fill(0); fighters = [fighter(0),fighter(1)]; remaining = 60; particles.length = 0; updateHUD(); }
 function updateHUD() {
   fighters.forEach((f,i) => { $('#hp'+(i+1)).style.width = f.hp+'%';$('#hp'+(i+1)).closest('.health').classList.toggle('low',f.hp<=25); $('#name'+(i+1)).textContent = f.name; $('#wins'+(i+1)).textContent = [0,1].map(n => n < wins[i] ? '●' : '○').join(' '); });
@@ -82,7 +82,7 @@ function update(dt) {
     if(!a.hit&&a.time>=d.active&&a.time<=d.end&&Math.abs(f.x-other.x)<d.reach&&Math.abs(f.y-other.y)<105){
       a.hit=true;const blocked=other.block;other.hp=Math.max(0,other.hp-(blocked?2:d.damage));other.stun=blocked?.08:.21;other.punchQueue=0;other.punchBufferTime=0;if(!blocked)other.interrupted=true;
       other.x=Math.max(65,Math.min(1135,other.x+f.facing*(blocked?9:23)));shake=blocked?1.4:a.finisher?11:5.5;
-      const impactScale=canvas.dataset.stage === 'kitay-gorod' ? .85 : 1;
+      const impactScale=canvas.dataset.stage === 'kitay-gorod' ? .92 : 1;
       const x=other.x-f.facing*26,y=other.y-(a.finisher?175:a.type==='kick'?122:155)*impactScale;
       arena3d.hit(x,y,{blocked,finisher:!!a.finisher,kick:a.type==='kick'});
       hitStop=Math.max(hitStop,blocked?.025:a.finisher?.075:.04);
