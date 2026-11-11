@@ -29,7 +29,7 @@ async function loadAsset(id) {
         ? await loader.parseAsync(Uint8Array.from(atob(embedded.textContent.trim()), c => c.charCodeAt(0)).buffer, '')
         : await loader.loadAsync(url);
       const packed=document.getElementById('animations-'+id);
-      const response=packed?null:await fetch('./assets/animations/'+id+'-updated.json?v=actions14');
+      const response=packed?null:await fetch('./assets/animations/'+id+'-updated.json?v=jump16');
       if(response&&!response.ok)throw new Error('Updated animations unavailable: '+response.status);
       const pack=packed?JSON.parse(packed.textContent):await response.json();
       const clips = new Map(gltf.animations.map(clip => [clip.name, clip]));
@@ -88,7 +88,7 @@ export async function loadCharacters(scene, ids = ['character1', 'bomzh']) {
       root.position.set((f.x - 600) / FIGHTER_WORLD_UNITS,(floor - f.y) / FIGHTER_WORLD_UNITS,0);
       root.rotation.y = f.facing === 1 ? 0 : Math.PI;
       guard.visible = f.block && !mapping.block;marker.visible = f.y === floor;
-      let name=f.block?mapping.block:f.y<floor?mapping.jump:f.crouching?mapping.crouch:f.moving?mapping.walk:mapping.idle;
+      let name=f.block?mapping.block:(f.y<floor||f.jumpPhase==='prepare'||f.jumpPhase==='land')?mapping.jump:f.crouching?mapping.crouch:f.moving?mapping.walk:mapping.idle;
       if(f.stun>0&&!f.block&&!f.hitBlocked)name=f.hitType==='mid'?mapping.hitMid:mapping.hitHigh;
       if(f.getupTime>0)name=mapping.getup;
       if(f.hp<=0)name=mapping.knockdown;
@@ -101,7 +101,7 @@ export async function loadCharacters(scene, ids = ['character1', 'bomzh']) {
       }
       const next = actions.get(name) || actions.get(mapping.idle);
       const reaction=name===mapping.hitHigh||name===mapping.hitMid;
-      const oneShot=!!f.attack||f.block||f.crouching||f.getupTime>0||f.hp<=0||reaction||f.y<floor;
+      const oneShot=!!f.attack||f.block||f.crouching||f.getupTime>0||f.hp<=0||reaction||f.y<floor||f.jumpPhase==='prepare'||f.jumpPhase==='land';
       if (next !== active || (f.attack && activeAttack !== f.attack) || (reaction&&activeReaction!==f.reactionId)) {
         const old = active;
         next.reset().setEffectiveWeight(1).setEffectiveTimeScale(1);
@@ -125,7 +125,7 @@ export async function loadCharacters(scene, ids = ['character1', 'bomzh']) {
         active.time = Math.min(active.time, active.getClip().duration * .5);
         mixer.update(0);
       }
-      if(f.y<floor&&!f.attack&&Number.isFinite(f.airTime)){active.time=Math.min(active.getClip().duration,f.airTime/.80645*active.getClip().duration);mixer.update(0)}
+      if(name===mapping.jump&&!f.attack&&Number.isFinite(f.jumpAnimTime)){active.time=Math.min(active.getClip().duration,f.jumpAnimTime);mixer.update(0)}
       activeAttack = f.attack;activeReaction=f.reactionId;
       // Supplied hit-reaction actions now own body recoil.
       pivot.rotation.z=0;

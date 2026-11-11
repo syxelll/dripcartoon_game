@@ -1,6 +1,7 @@
-import { createArena } from './renderer.js?v=actions15';
-import { CHARACTER_ROSTER } from './character.js?v=actions15';
-import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=actions15';
+import {beginJump,advanceGroundJump,advanceVertical} from './jump.js?v=jump16';
+import { createArena } from './renderer.js?v=jump16';
+import { CHARACTER_ROSTER } from './character.js?v=jump16';
+import { ATTACKS, startAttack, requestPunch, advancePunchBuffer, finishAttack, attackStats } from './combo.js?v=jump16';
 'use strict';
 const selectedCharacters = ['character1', 'bomzh'];
 // Slot colors are independent of the selected character.
@@ -21,7 +22,7 @@ const hitChains=[{count:0,damage:0,time:0},{count:0,damage:0,time:0}];
 let shake = 0, soundEnabled = false, audioContext;
 const FLOOR = 528;
 const punchPresses = [0, 0];
-function fighter(i) { return { ...CHARACTERS[i], name: CHARACTER_ROSTER[selectedCharacters[i]].name, x: canvas.dataset.stage==='kitay-gorod' ? (i?765:435) : (i?830:370), y: FLOOR, vy: 0, facing: i ? -1 : 1, hp:100,animationDurations:CHARACTER_ROSTER[selectedCharacters[i]].durations||{},crouching:false,jumpHeld:false,airAttackUsed:false,airTime:0,getupTime:0,reactionId:0,hitType:'high',attack: null, cooldown: 0, stun: 0, block: false, moving: false, punchQueue: 0, punchBufferTime: 0, punchCount: CHARACTER_ROSTER[selectedCharacters[i]].clips.punches.length, finisherIndex: CHARACTER_ROSTER[selectedCharacters[i]].clips.punches.indexOf(CHARACTER_ROSTER[selectedCharacters[i]].clips.finisher), finisherDuration: CHARACTER_ROSTER[selectedCharacters[i]].finisherDuration, punchHeld: false, interrupted: false, aiTime: 0, aiAction: 'approach' }; }
+function fighter(i) { return { ...CHARACTERS[i], name: CHARACTER_ROSTER[selectedCharacters[i]].name, x: canvas.dataset.stage==='kitay-gorod' ? (i?765:435) : (i?830:370), y: FLOOR, vy: 0, facing: i ? -1 : 1, hp:100,animationDurations:CHARACTER_ROSTER[selectedCharacters[i]].durations||{},crouching:false,jumpHeld:false,airAttackUsed:false,airTime:0,jumpPhase:'ground',jumpPrep:0,jumpLand:0,jumpAnimTime:0,jumpStrikeQueued:false,getupTime:0,reactionId:0,hitType:'high',attack: null, cooldown: 0, stun: 0, block: false, moving: false, punchQueue: 0, punchBufferTime: 0, punchCount: CHARACTER_ROSTER[selectedCharacters[i]].clips.punches.length, finisherIndex: CHARACTER_ROSTER[selectedCharacters[i]].clips.punches.indexOf(CHARACTER_ROSTER[selectedCharacters[i]].clips.finisher), finisherDuration: CHARACTER_ROSTER[selectedCharacters[i]].finisherDuration, punchHeld: false, interrupted: false, aiTime: 0, aiAction: 'approach' }; }
 function resetFighters() { arena3d.resetEffects();clearTimeout(impactTimer);delete canvas.closest('.game').dataset.impact;hitStop=0;hitChains.forEach(c=>{c.count=0;c.damage=0;c.time=0});document.querySelectorAll('.combo-display').forEach(e=>e.classList.remove('visible'));  punchPresses.fill(0); fighters = [fighter(0),fighter(1)]; remaining = 60; particles.length = 0; updateHUD(); }
 function updateHUD() {
   fighters.forEach((f,i) => { $('#hp'+(i+1)).style.width = f.hp+'%';$('#hp'+(i+1)).closest('.health').classList.toggle('low',f.hp<=25); $('#name'+(i+1)).textContent = f.name; $('#wins'+(i+1)).textContent = [0,1].map(n => n < wins[i] ? '●' : '○').join(' '); });
@@ -36,13 +37,20 @@ function tone(freq, duration, type='triangle') { if(!soundEnabled)return; audioC
 
 function control(f,input,dt){
   const jumpPressed=input.jump&&!f.jumpHeld;f.jumpHeld=!!input.jump;f.moving=false;
-  f.block=!!input.block&&f.y===FLOOR&&!f.attack&&(f.stun<=0||f.block)&&f.getupTime<=0;
-  f.crouching=!!input.crouch&&f.y===FLOOR&&!input.jump&&!f.block;
+  f.block=!!input.block&&f.y===FLOOR&&f.jumpPhase==='ground'&&!f.attack&&(f.stun<=0||f.block)&&f.getupTime<=0;
+  f.crouching=!!input.crouch&&f.y===FLOOR&&f.jumpPhase==='ground'&&!input.jump&&!f.block;
   if(f.y===FLOOR&&f.vy===0)f.airAttackUsed=false;
   if(input.block||f.crouching){f.punchQueue=0;f.punchBufferTime=0}
-  if(f.getupTime>0||f.stun>0||f.hp<=0){f.punchQueue=0;f.punchBufferTime=0;return}
+  if(f.getupTime>0||f.stun>0||f.hp<=0){if(f.y===FLOOR)f.jumpPhase='ground';f.jumpStrikeQueued=false;f.punchQueue=0;f.punchBufferTime=0;return}
+  const jointStrike=!!input.jump&&!!(input.punch||input.kick||input.punchPresses);
+  if(f.jumpPhase==='prepare'||f.jumpPhase==='land'){
+    if(f.jumpPhase==='prepare'&&jointStrike)f.jumpStrikeQueued=true;
+    const phase=advanceGroundJump(f,dt);
+    if(phase==='takeoff'&&f.jumpStrikeQueued&&startAttack(f,'jumpKick'))f.airAttackUsed=true;
+    return;
+  }
   if(!f.crouching)advancePunchBuffer(f,dt);
-  if(!f.attack&&!f.block&&!f.crouching){const dir=Number(input.right)-Number(input.left);f.x+=dir*245*dt;f.moving=dir!==0;if(jumpPressed&&f.y===FLOOR){f.vy=-625;f.airTime=0}}
+  if(!f.attack&&!f.block&&!f.crouching){const dir=Number(input.right)-Number(input.left);f.x+=dir*245*dt;f.moving=dir!==0;if(jumpPressed&&f.y===FLOOR){beginJump(f,jointStrike);f.punchQueue=0;f.punchBufferTime=0;return}}
   const airborne=f.y<FLOOR||f.vy<0;
   if(airborne){if(input.jump&&(input.punch||input.kick||input.punchPresses)&&!f.airAttackUsed&&startAttack(f,'jumpKick'))f.airAttackUsed=true;return}
   if(f.crouching){if(input.kick||input.punchPresses)startAttack(f,'crouchKick');return}
@@ -68,7 +76,7 @@ function update(dt) {
   if(announcementTime>0){announcementTime-=dt;if(announcementTime<=0)$('#announcement').textContent='';}
   shake=Math.max(0,shake-dt*35);
   for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=480*dt;if(p.life<=0)particles.splice(i,1);}
-  if(state==='roundEnd'){fighters.forEach(f=>{if(f.attack){f.attack.time+=dt;finishAttack(f)}f.stun=Math.max(0,f.stun-dt);if(f.y<FLOOR){f.vy+=1550*dt;f.y=Math.min(FLOOR,f.y+f.vy*dt);f.airTime+=dt;if(f.y===FLOOR){f.vy=0;f.airTime=0}}});roundDelay-=dt;if(roundDelay<=0){if(wins.some(w=>w===2)){state='over';showOverlay(fighters[wins[0]===2?0:1].name+' ПОБЕДИЛ','Матч завершён. Готов к реваншу?','РЕВАНШ');}else{const down=fighters.map(f=>f.hp<=0);round++;resetFighters();fighters.forEach((f,i)=>{if(down[i])f.getupTime=f.animationDurations.getup||.7});state='fight';announce('РАУНД '+round,1);}}return;}
+  if(state==='roundEnd'){fighters.forEach(f=>{if(f.attack){f.attack.time+=dt;finishAttack(f)}f.stun=Math.max(0,f.stun-dt);if(f.y<FLOOR)advanceVertical(f,dt,FLOOR)});roundDelay-=dt;if(roundDelay<=0){if(wins.some(w=>w===2)){state='over';showOverlay(fighters[wins[0]===2?0:1].name+' ПОБЕДИЛ','Матч завершён. Готов к реваншу?','РЕВАНШ');}else{const down=fighters.map(f=>f.hp<=0);round++;resetFighters();fighters.forEach((f,i)=>{if(down[i])f.getupTime=f.animationDurations.getup||.7});state='fight';announce('РАУНД '+round,1);}}return;}
   if(state!=='fight')return;
   remaining=Math.max(0,remaining-dt);
   fighters.forEach((f,i)=>{
@@ -76,7 +84,7 @@ function update(dt) {
     const input=i===0?{left:keys.has('a'),right:keys.has('d'),jump:keys.has('w'),crouch:keys.has('s'),punch:keys.has('j'),punchPresses:punchPresses[0],kick:keys.has('k'),block:keys.has('l')}:$('#mode').value==='cpu'?cpu(f,fighters[0],dt):{left:keys.has('arrowleft'),right:keys.has('arrowright'),jump:keys.has('arrowup'),crouch:keys.has('arrowdown'),punch:keys.has('1'),punchPresses:punchPresses[1],kick:keys.has('2'),block:keys.has('3')};
     if (i===1 && $('#mode').value==='cpu') input.punchPresses ??= input.punch && !f.punchHeld ? 1 : 0;
     f.punchHeld = input.punch;
-    control(f,input,dt);f.vy+=1550*dt;f.y=Math.min(FLOOR,f.y+f.vy*dt);if(f.y===FLOOR){f.vy=0;f.airTime=0}else f.airTime+=dt;f.x=Math.max(65,Math.min(1135,f.x));
+    control(f,input,dt);advanceVertical(f,dt,FLOOR);f.x=Math.max(65,Math.min(1135,f.x));
     if(f.attack)f.attack.time+=dt;
   });
   punchPresses.fill(0);

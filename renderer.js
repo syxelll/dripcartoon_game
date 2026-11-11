@@ -1,9 +1,9 @@
-import {createCombatEffects} from './combat-effects.js?v=actions15';
-import {loadKitayGorod} from './kitay-gorod.js?v=actions15';
+import {createCombatEffects} from './combat-effects.js?v=jump16';
+import {loadKitayGorod} from './kitay-gorod.js?v=jump16';
 import * as THREE from './vendor/three.module.js';
-import {OUTDOOR_LOOK} from './outdoor/look-preset.js?v=actions15';
-import { loadCharacters, FIGHTER_WORLD_UNITS } from './character.js?v=actions15';
-import { loadOutdoorTemplates, createOutdoorWorld, createReferenceLook, OUTDOOR_LOCATIONS } from './outdoor/environment.js?v=actions15';
+import {OUTDOOR_LOOK} from './outdoor/look-preset.js?v=jump16';
+import { loadCharacters, FIGHTER_WORLD_UNITS } from './character.js?v=jump16';
+import { loadOutdoorTemplates, createOutdoorWorld, createReferenceLook, OUTDOOR_LOCATIONS } from './outdoor/environment.js?v=jump16';
 
 export function createArena(canvas) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
